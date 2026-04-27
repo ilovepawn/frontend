@@ -1,5 +1,7 @@
-# Claude
-.claude/
+# Claude — keep shared config; ignore local-only/transient
+.claude/settings.local.json
+.claude/CLAUDE.local.md
+.claude/cache/
 
 # Node
 node_modules/
