@@ -19,7 +19,7 @@ frontend/
 ## 기술 스택
 
 - **언어**: TypeScript (strict)
-- **웹 프레임워크**: Next.js 15 (App Router)
+- **웹 프레임워크**: Next.js 16 (App Router)
 - **스타일링**: Tailwind CSS v4 + shadcn/ui
 - **상태 관리**: Zustand + TanStack Query + React Hook Form + Zod
 - **체스**: chess.js, chessground, Stockfish (WASM)

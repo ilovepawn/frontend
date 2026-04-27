@@ -19,7 +19,7 @@ frontend/
 ## Stack
 
 - **Language**: TypeScript (strict)
-- **Web framework**: Next.js 15 (App Router)
+- **Web framework**: Next.js 16 (App Router)
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **State**: Zustand + TanStack Query + React Hook Form + Zod
 - **Chess**: chess.js, chessground, Stockfish (WASM)

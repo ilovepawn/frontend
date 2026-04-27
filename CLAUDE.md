@@ -19,7 +19,7 @@ This repo is the *only* user-facing surface for that platform.
 ```
 frontend/
 ├── apps/
-│   ├── web/         # Next.js 15 App Router app (the only running app at the moment)
+│   ├── web/         # Next.js 16 App Router app (the only running app at the moment)
 │   └── mobile/      # Expo (React Native) — planned, not yet scaffolded
 └── packages/
     ├── shared/      # Pure-TS chess logic and utilities (chess.js wrappers, board state helpers, theme tokens). No React.
@@ -31,7 +31,7 @@ Workspaces are managed by **pnpm**, build orchestration by **Turborepo**.
 ## Tech Stack
 
 - TypeScript (strict, `noUncheckedIndexedAccess`)
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - Tailwind CSS v4 + shadcn/ui + lucide-react
 - Zustand (client state) + TanStack Query (server state) + React Hook Form + Zod
 - chess.js (move generation/validation/PGN) + chessground (Lichess board UI) + Stockfish (WASM, in Worker)
