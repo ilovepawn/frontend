@@ -41,3 +41,8 @@ coverage/
 # Test artifacts
 playwright-report/
 test-results/
+
+# Next.js
+next-env.d.ts
+*.tsbuildinfo
+.vercel
