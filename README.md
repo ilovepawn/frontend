@@ -41,11 +41,11 @@ pnpm test         # run all tests
 pnpm check        # lint + format check
 ```
 
-`apps/web/.env.local` is gitignored. `NEXT_PUBLIC_API_URL` must point at the running Arbiter backend (default `http://localhost:8080`); without it, the static prerender of `/login` will fail at build time.
+`apps/web/.env.local` is gitignored. Four `NEXT_PUBLIC_*` values are required: `API_URL` (Arbiter backend, default `http://localhost:8080`), `KEYCLOAK_URL` (default `http://localhost:8081`), `KEYCLOAK_REALM` (`ilovepawn`), and `KEYCLOAK_CLIENT_ID` (`arbiter`). See `apps/web/.env.example`.
 
 ## Authentication
 
-Backend-driven Google OAuth with HttpOnly JWT cookies (`ARBITER_AT` / `ARBITER_RT`). The frontend never reads or stores the JWT; it just navigates to `${API}/oauth2/authorization/google`, lets the backend complete the OAuth dance, and receives the cookies on the redirect back to `/auth/callback`. Subsequent API calls ride on `credentials: "include"`.
+**Keycloak** is the identity provider. The frontend uses `keycloak-js` (PKCE flow, public client) to authenticate directly against Keycloak — which federates Google as an upstream IdP — and sends Keycloak-issued JWTs to Arbiter as `Authorization: Bearer` headers. The Arbiter backend acts as a Resource Server validating those tokens. No cookies are used for auth; tokens live in JS memory and are auto-refreshed by the SDK.
 
 ## Backend services
 

@@ -41,11 +41,11 @@ pnpm test         # 모든 테스트 실행
 pnpm check        # 린트 + 포맷 검사
 ```
 
-`apps/web/.env.local`은 gitignored입니다. `NEXT_PUBLIC_API_URL`은 실행 중인 Arbiter 백엔드를 가리켜야 하며(기본값 `http://localhost:8080`), 설정되지 않으면 `/login`의 정적 prerender가 빌드 타임에 실패합니다.
+`apps/web/.env.local`은 gitignored입니다. 네 개의 `NEXT_PUBLIC_*` 값이 필요합니다: `API_URL`(Arbiter 백엔드, 기본 `http://localhost:8080`), `KEYCLOAK_URL`(기본 `http://localhost:8081`), `KEYCLOAK_REALM`(`ilovepawn`), `KEYCLOAK_CLIENT_ID`(`arbiter`). 자세한 내용은 `apps/web/.env.example` 참고.
 
 ## 인증
 
-HttpOnly JWT 쿠키(`ARBITER_AT` / `ARBITER_RT`) 기반의 백엔드 주도 Google OAuth. 프론트엔드는 JWT를 직접 읽거나 저장하지 않고, `${API}/oauth2/authorization/google`로 페이지 이동만 합니다. 백엔드가 OAuth 흐름을 완료하면 `/auth/callback`로 리다이렉트되며 그 시점에 쿠키가 이미 설정됩니다. 이후 API 호출은 `credentials: "include"`로 쿠키와 함께 전송됩니다.
+**Keycloak**이 ID 제공자(IdP)입니다. 프론트엔드는 `keycloak-js`(PKCE, public client)로 Keycloak에 직접 인증하며, Keycloak이 Google을 업스트림 IdP로 federation합니다. Arbiter로 가는 모든 API 요청에는 Keycloak이 발급한 JWT가 `Authorization: Bearer` 헤더로 실립니다. Arbiter는 그 토큰을 검증하는 Resource Server 역할만 합니다. 인증에 쿠키는 사용하지 않으며, 토큰은 JS 메모리에 저장되고 SDK가 자동으로 갱신합니다.
 
 ## 백엔드 서비스
 
