@@ -16,8 +16,6 @@ function loadConfig() {
   return { url, realm, clientId };
 }
 
-const config = loadConfig();
-
 let instance: Keycloak | null = null;
 
 export function getKeycloak(): Keycloak {
@@ -25,7 +23,7 @@ export function getKeycloak(): Keycloak {
     throw new Error("Keycloak is browser-only and cannot be accessed during SSR.");
   }
   if (instance) return instance;
-  instance = new Keycloak(config);
+  instance = new Keycloak(loadConfig());
   return instance;
 }
 
