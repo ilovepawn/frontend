@@ -34,11 +34,18 @@ frontend/
 
 ```bash
 pnpm install
+cp apps/web/.env.example apps/web/.env.local   # set NEXT_PUBLIC_API_URL for dev/build
 pnpm dev          # run all apps in dev mode
 pnpm build        # build all apps and packages
 pnpm test         # run all tests
 pnpm check        # lint + format check
 ```
+
+`apps/web/.env.local` is gitignored. `NEXT_PUBLIC_API_URL` must point at the running Arbiter backend (default `http://localhost:8080`); without it, the static prerender of `/login` will fail at build time.
+
+## Authentication
+
+Backend-driven Google OAuth with HttpOnly JWT cookies (`ARBITER_AT` / `ARBITER_RT`). The frontend never reads or stores the JWT; it just navigates to `${API}/oauth2/authorization/google`, lets the backend complete the OAuth dance, and receives the cookies on the redirect back to `/auth/callback`. Subsequent API calls ride on `credentials: "include"`.
 
 ## Backend services
 
