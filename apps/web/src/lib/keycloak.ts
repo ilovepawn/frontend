@@ -1,18 +1,22 @@
 import Keycloak from "keycloak-js";
 
-const url = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
-const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
-const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+function loadConfig() {
+  const url = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
+  const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
+  const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+  if (!url) {
+    throw new Error("NEXT_PUBLIC_KEYCLOAK_URL is not configured. See .env.example.");
+  }
+  if (!realm) {
+    throw new Error("NEXT_PUBLIC_KEYCLOAK_REALM is not configured. See .env.example.");
+  }
+  if (!clientId) {
+    throw new Error("NEXT_PUBLIC_KEYCLOAK_CLIENT_ID is not configured. See .env.example.");
+  }
+  return { url, realm, clientId };
+}
 
-if (!url) {
-  throw new Error("NEXT_PUBLIC_KEYCLOAK_URL is not configured. See .env.example.");
-}
-if (!realm) {
-  throw new Error("NEXT_PUBLIC_KEYCLOAK_REALM is not configured. See .env.example.");
-}
-if (!clientId) {
-  throw new Error("NEXT_PUBLIC_KEYCLOAK_CLIENT_ID is not configured. See .env.example.");
-}
+const config = loadConfig();
 
 let instance: Keycloak | null = null;
 
@@ -21,7 +25,7 @@ export function getKeycloak(): Keycloak {
     throw new Error("Keycloak is browser-only and cannot be accessed during SSR.");
   }
   if (instance) return instance;
-  instance = new Keycloak({ url, realm, clientId });
+  instance = new Keycloak(config);
   return instance;
 }
 
