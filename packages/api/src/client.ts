@@ -1,6 +1,5 @@
 export interface ApiClientOptions {
   baseUrl: string;
-  getAuthToken?: () => string | null | undefined;
 }
 
 export interface RequestOptions extends Omit<RequestInit, "body"> {
@@ -30,12 +29,9 @@ export class ApiClient {
     if (body !== undefined && !finalHeaders.has("Content-Type")) {
       finalHeaders.set("Content-Type", "application/json");
     }
-    const token = this.options.getAuthToken?.();
-    if (token && !finalHeaders.has("Authorization")) {
-      finalHeaders.set("Authorization", `Bearer ${token}`);
-    }
 
     const response = await fetch(url, {
+      credentials: "include",
       ...rest,
       headers: finalHeaders,
       body: body === undefined ? undefined : JSON.stringify(body),
