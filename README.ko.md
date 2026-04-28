@@ -34,11 +34,18 @@ frontend/
 
 ```bash
 pnpm install
+cp apps/web/.env.example apps/web/.env.local   # 개발/빌드용 NEXT_PUBLIC_API_URL 설정
 pnpm dev          # 모든 앱 개발 모드 실행
 pnpm build        # 모든 앱/패키지 빌드
 pnpm test         # 모든 테스트 실행
 pnpm check        # 린트 + 포맷 검사
 ```
+
+`apps/web/.env.local`은 gitignored입니다. `NEXT_PUBLIC_API_URL`은 실행 중인 Arbiter 백엔드를 가리켜야 하며(기본값 `http://localhost:8080`), 설정되지 않으면 `/login`의 정적 prerender가 빌드 타임에 실패합니다.
+
+## 인증
+
+HttpOnly JWT 쿠키(`ARBITER_AT` / `ARBITER_RT`) 기반의 백엔드 주도 Google OAuth. 프론트엔드는 JWT를 직접 읽거나 저장하지 않고, `${API}/oauth2/authorization/google`로 페이지 이동만 합니다. 백엔드가 OAuth 흐름을 완료하면 `/auth/callback`로 리다이렉트되며 그 시점에 쿠키가 이미 설정됩니다. 이후 API 호출은 `credentials: "include"`로 쿠키와 함께 전송됩니다.
 
 ## 백엔드 서비스
 

@@ -40,7 +40,17 @@ Workspaces are managed by **pnpm**, build orchestration by **Turborepo**.
 
 ## Authentication
 
-Backend-driven OAuth. The frontend renders a plain hyperlink to `{API}/auth/<provider>`; the backend handles the entire OAuth flow with the provider and issues a JWT. The frontend stores the JWT (mechanism TBD with backend — cookie vs. body) and attaches it to subsequent API calls.
+Backend-driven Google OAuth with **HttpOnly JWT cookies** (`ARBITER_AT` access, 30 min, `Path=/`; `ARBITER_RT` refresh, 14 d, `Path=/api/auth/refresh`). The frontend never reads or stores the JWT.
+
+Flow:
+1. `/login` page is a plain hyperlink to `{API}/oauth2/authorization/google` (Spring Security OAuth2 Client convention) — page navigation, not fetch.
+2. Backend completes the OAuth dance, sets cookies, then 302s to `{FRONTEND}/auth/callback`.
+3. `/auth/callback` shows a transition UI and redirects to `/`. Cookies are already in the jar.
+4. Subsequent API calls go through `ApiClient`, which sends `credentials: "include"` so the cookies ride along. **Do not** add `Authorization: Bearer` headers — there is no token in JS.
+
+Key endpoints (Arbiter backend): `POST /api/auth/refresh`, `POST /api/auth/logout`, `POST /api/auth/dev/login?email=...` (local-only seed-user bypass). `GET /api/users/me` is not yet implemented; until it lands, real auth-state UI (header/guards) is blocked.
+
+Local config: `apps/web/.env.local` must set `NEXT_PUBLIC_API_URL` (see `.env.example`); CI injects it for the production build of the static `/login` route.
 
 **Do not install `next-auth` / `@auth/core`.** The backend already owns OAuth; client frameworks duplicate and conflict.
 
