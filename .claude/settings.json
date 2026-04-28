@@ -132,10 +132,10 @@
       "Bash(yarn publish:*)",
       "Bash(sudo:*)",
       "Bash(chmod 777:*)",
-      "Bash(curl:* | sh)",
-      "Bash(curl:* | bash)",
-      "Bash(wget:* | sh)",
-      "Bash(wget:* | bash)"
+      "Bash(curl * | sh)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | sh)",
+      "Bash(wget * | bash)"
     ]
   },
   "hooks": {
