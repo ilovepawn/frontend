@@ -40,19 +40,26 @@ Workspaces are managed by **pnpm**, build orchestration by **Turborepo**.
 
 ## Authentication
 
-Backend-driven Google OAuth with **HttpOnly JWT cookies** (`ARBITER_AT` access, 30 min, `Path=/`; `ARBITER_RT` refresh, 14 d, `Path=/api/auth/refresh`). The frontend never reads or stores the JWT.
+**Keycloak** is the identity provider. The frontend talks to Keycloak directly via `keycloak-js` (PKCE flow, public client) and sends Keycloak-issued JWTs to Arbiter as `Authorization: Bearer` headers. Arbiter is a Resource Server that validates those tokens.
+
+Keycloak federates Google as an upstream IdP — the frontend never talks to Google directly. Adding more providers (Apple, Kakao, …) is a Keycloak admin-console change, not a frontend code change.
 
 Flow:
-1. `/login` page is a plain hyperlink to `{API}/oauth2/authorization/google` (Spring Security OAuth2 Client convention) — page navigation, not fetch.
-2. Backend completes the OAuth dance, sets cookies, then 302s to `{FRONTEND}/auth/callback`.
-3. `/auth/callback` shows a transition UI and redirects to `/`. Cookies are already in the jar.
-4. Subsequent API calls go through `ApiClient`, which sends `credentials: "include"` so the cookies ride along. **Do not** add `Authorization: Bearer` headers — there is no token in JS.
+1. User clicks "Continue with Google" on `/login` → `keycloak.login()` redirects to the Keycloak login page (Google button shown by Keycloak).
+2. Keycloak completes the upstream OAuth dance with Google, then redirects back to the frontend.
+3. `keycloak-js` parses the callback URL fragment on `init()` (any route — there is no dedicated `/auth/callback`).
+4. `AuthProvider` (in `src/components/auth/auth-provider.tsx`) calls `keycloak.init({ onLoad: "check-sso", pkceMethod: "S256", silentCheckSsoRedirectUri })` once on app boot, then fetches `GET /api/users/me` (which lazy-creates the user row on first call) and populates the Zustand auth store. The app shell renders only after this gate completes.
+5. All subsequent API calls go through `ApiClient`, which calls `ensureFreshToken(30)` and attaches `Authorization: Bearer ${token}`. **No cookies, no `credentials: "include"`.**
 
-Key endpoints (Arbiter backend): `POST /api/auth/refresh`, `POST /api/auth/logout`, `POST /api/auth/dev/login?email=...` (local-only seed-user bypass). `GET /api/users/me` is not yet implemented; until it lands, real auth-state UI (header/guards) is blocked.
+Key files:
+- `src/lib/keycloak.ts` — module-singleton Keycloak instance (lazy, SSR-safe). Exports `getKeycloak()` and `ensureFreshToken()`.
+- `src/stores/auth.ts` — Zustand store holding only derived state (`authenticated`, `tokenParsed`, `me`). The Keycloak instance itself stays out of the store.
+- `src/components/auth/auth-provider.tsx` — `'use client'` boot gate. Module-level `initStarted` boolean guards against React Strict Mode double-init.
+- `apps/web/public/silent-check-sso.html` — required iframe target for the silent SSO check.
 
-Local config: `apps/web/.env.local` must set `NEXT_PUBLIC_API_URL` (see `.env.example`); CI injects it for the production build of the static `/login` route.
+Local config: `apps/web/.env.local` must set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_KEYCLOAK_URL`, `NEXT_PUBLIC_KEYCLOAK_REALM`, `NEXT_PUBLIC_KEYCLOAK_CLIENT_ID` (see `.env.example`).
 
-**Do not install `next-auth` / `@auth/core`.** The backend already owns OAuth; client frameworks duplicate and conflict.
+**Do not install `next-auth` / `@auth/core`.** Keycloak owns the identity layer; client frameworks duplicate and conflict.
 
 ## Stockfish licensing
 

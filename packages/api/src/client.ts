@@ -1,5 +1,6 @@
 export interface ApiClientOptions {
   baseUrl: string;
+  getAuthHeader?: () => Promise<string | undefined> | string | undefined;
 }
 
 export interface RequestOptions extends Omit<RequestInit, "body"> {
@@ -30,8 +31,14 @@ export class ApiClient {
       finalHeaders.set("Content-Type", "application/json");
     }
 
+    if (this.options.getAuthHeader && !finalHeaders.has("Authorization")) {
+      const authHeader = await this.options.getAuthHeader();
+      if (authHeader) {
+        finalHeaders.set("Authorization", authHeader);
+      }
+    }
+
     const response = await fetch(url, {
-      credentials: "include",
       ...rest,
       headers: finalHeaders,
       body: body === undefined ? undefined : JSON.stringify(body),
